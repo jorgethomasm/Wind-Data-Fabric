@@ -9,6 +9,9 @@ data:
 wind_farms:
   - Björkö
   - Hill_of_Towie
+  - Kelmarsh
+  - Penmanshiel
+
 
 default_time_zone: UTC
 

@@ -1,3 +1,4 @@
+# ...existing code...
 """
 Create DuckDB database from SCADA CSV/Parquet files.
 
@@ -20,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class WindFarmDBBuilder:
+class duckDBBuilder:
     """Build DuckDB database for wind farm SCADA data."""
     
     def __init__(self, farm_name: str, base_path: Path = Path(".")):
@@ -239,13 +240,13 @@ def main():
         
         for farm in farms:
             try:
-                builder = WindFarmDBBuilder(farm, base_path)
+                builder = duckDBBuilder(farm, base_path)
                 builder.build()
             except Exception as e:
                 logger.error(f"Failed to build {farm}: {e}")
     else:
         # Process single wind farm
-        builder = WindFarmDBBuilder(args.farm, base_path)
+        builder = duckDBBuilder(args.farm, base_path)
         builder.build()
 
 
