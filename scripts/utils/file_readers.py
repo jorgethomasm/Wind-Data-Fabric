@@ -1,5 +1,12 @@
+"""
+File readers utility for DuckDB.
+
+Author: jorgethomasm@ieee.org
+"""
+
+
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, Union
 import duckdb
 
 
@@ -90,7 +97,7 @@ def read_excel_to_table(con: duckdb.DuckDBPyConnection, xls_path: Union[str, Pat
             con.execute("INSTALL 'excel'")
             con.execute("LOAD 'excel'")
         except Exception as e:
-            raise RuntimeError("DuckDB excel extension is not available and could not be installed/loaded") from e
+            raise RuntimeError("DuckDB Excel extension is not available and could not be installed/loaded") from e
 
     if sheet is None:
         sheet_arg = ""
