@@ -1,0 +1,18 @@
+project:
+  name: wind-data-fabric
+  version: 1.0.0
+
+data:
+  raw_path: data/raw
+  processed_path: data/processed
+  
+wind_farms:
+  - Björkö
+  - Hill_of_Towie
+
+default_time_zone: UTC
+
+# Query defaults
+query_defaults:
+  max_rows: 1000000
+  default_aggregation: 10min
