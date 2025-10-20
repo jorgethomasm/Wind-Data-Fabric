@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
-# Data
-data/
+# Data - ignore all files but keep folder structure
+data/**
+!data/
+!data/*/
+!data/**/.gitkeep
 
