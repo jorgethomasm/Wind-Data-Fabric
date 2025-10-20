@@ -21,7 +21,7 @@ Wind Data Fabric provides utilities to automatically discover and consolidate wi
 ```
 Wind-Data-Fabric/
 ├── data/
-│   ├── raw/                    # Raw data files organized by folder
+│   ├── raw/                   # Raw data files organized by folder
 │   │   ├── Kelmarsh/          # Example: wind farm data folder
 │   │   │   ├── scada_data.parquet
 │   │   │   ├── channels_metadata.csv
@@ -29,6 +29,8 @@ Wind-Data-Fabric/
 │   │   └── your_folder/       # Your data files here
 │   └── processed/             # Generated DuckDB databases
 │       └── your_folder.duckdb
+│       └── your_folder_schema.yaml
+│       └── your_folder_log.txt
 ├── scripts/
 │   ├── create_duckdb.py       # Main database creation script
 │   └── utils/
@@ -125,8 +127,9 @@ DATABASE SUMMARY: MyWindFarm
   system_modes_mapping                     12 rows    3 columns
   turbine_specs                             8 rows   20 columns
 
-  Database size: 45.32 MB
-  Total elapsed time: 3.47 seconds
+  Raw files size: 2797.77 MB
+  Database size: 552.76 MB
+  Total elapsed time: 6.78 seconds
 ============================================================
 ```
 
@@ -273,8 +276,8 @@ SOFTWARE.
 ## Author
 
 Jorge A. Thomas-Meléndez   
-Email: jorgethomasm@ieee.org
-LinkedIn: [linkedin.com/in/jorge-thomas-melendez](https://www.linkedin.com/in/jorge-thomas-ba751b8/)
+- Email: jorgethomasm@ieee.org
+- [LinkedIn](https://www.linkedin.com/in/jorge-thomas-ba751b8/)
 
 ## Acknowledgments
 
