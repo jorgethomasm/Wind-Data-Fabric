@@ -43,6 +43,9 @@ class DuckDBBuilder:
         self.processed_path = self.base_path / "data" / "processed"
         self.db_path = self.processed_path / f"{folder_name}.duckdb"
 
+        # Track total raw file sizes
+        self.total_raw_size = 0
+
         # Ensure processed directory exists
         self.processed_path.mkdir(parents=True, exist_ok=True)
 
@@ -93,6 +96,8 @@ class DuckDBBuilder:
             table_name = self._generate_table_name(parquet_file)
             logger.info(f"Loading parquet: {parquet_file.name} → {table_name}")
             try:
+                # Track file size
+                self.total_raw_size += parquet_file.stat().st_size
                 result = read_parquet_to_table(con, parquet_file, table_name)
                 logger.info(f"  ✓ Loaded {result['rows']:,} rows, {len(result['columns'])} columns")
                 tables_created.append(table_name)
@@ -104,6 +109,8 @@ class DuckDBBuilder:
             table_name = self._generate_table_name(csv_file)
             logger.info(f"Loading CSV: {csv_file.name} → {table_name}")
             try:
+                # Track file size
+                self.total_raw_size += csv_file.stat().st_size
                 result = read_csv_to_table(con, csv_file, table_name, auto_detect=True)
                 logger.info(f"  ✓ Loaded {result['rows']:,} rows, {len(result['columns'])} columns")
                 tables_created.append(table_name)
@@ -115,6 +122,8 @@ class DuckDBBuilder:
             table_name = self._generate_table_name(json_file)
             logger.info(f"Loading JSON: {json_file.name} → {table_name}")
             try:
+                # Track file size
+                self.total_raw_size += json_file.stat().st_size
                 result = read_json_to_table(con, json_file, table_name, auto_detect=True)
                 logger.info(f"  ✓ Loaded {result['rows']:,} rows, {len(result['columns'])} columns")
                 tables_created.append(table_name)
@@ -126,6 +135,8 @@ class DuckDBBuilder:
             table_name = self._generate_table_name(excel_file)
             logger.info(f"Loading Excel: {excel_file.name} → {table_name}")
             try:
+                # Track file size
+                self.total_raw_size += excel_file.stat().st_size
                 result = read_excel_to_table(con, excel_file, table_name)
                 logger.info(f"  ✓ Loaded {result['rows']:,} rows, {len(result['columns'])} columns")
                 tables_created.append(table_name)
@@ -337,27 +348,49 @@ class DuckDBBuilder:
             logger.error(f"  ✗ Failed to write schema file: {e}")
 
     def _print_summary(self, con, elapsed_time=None):
-        """Print database summary."""
-        print("\n" + "="*60)
-        print(f"DATABASE SUMMARY: {self.folder_name}")
-        print("="*60)
+        """Print database summary and save to log file."""
+        # Build summary content
+        summary_lines = []
+        summary_lines.append("=" * 60)
+        summary_lines.append(f"DATABASE SUMMARY: {self.folder_name}")
+        summary_lines.append("=" * 60)
+        summary_lines.append("")
 
         tables = con.execute("SHOW TABLES").fetchall()
 
         for (table,) in tables:
             count = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             cols = len(con.execute(f"DESCRIBE {table}").fetchall())
-            print(f"  {table:30} {count:>12,} rows  {cols:>3} columns")
+            summary_lines.append(f"  {table:30} {count:>12,} rows  {cols:>3} columns")
+
+        # Raw files total size
+        raw_size_mb = self.total_raw_size / (1024 * 1024)
+        summary_lines.append("")
+        summary_lines.append(f"  Raw files size: {raw_size_mb:.2f} MB")
 
         # Database size
         size_mb = self.db_path.stat().st_size / (1024 * 1024)
-        print(f"\n  Database size: {size_mb:.2f} MB")
+        summary_lines.append(f"  Database size: {size_mb:.2f} MB")
 
         # Elapsed time
         if elapsed_time is not None:
-            print(f"  Total elapsed time: {elapsed_time:.2f} seconds")
+            summary_lines.append(f"  Total elapsed time: {elapsed_time:.2f} seconds")
 
-        print("="*60 + "\n")
+        summary_lines.append("=" * 60)
+        summary_lines.append("")
+
+        # Print to console
+        print("\n" + "\n".join(summary_lines))
+
+        # Save to log file
+        log_file = self.processed_path / f"{self.folder_name}_log.txt"
+        try:
+            with open(log_file, 'w') as f:
+                f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("\n".join(summary_lines))
+            logger.info(f"Summary saved to: {log_file}")
+        except Exception as e:
+            logger.error(f"Failed to save summary log: {e}")
 
 
 def main():
