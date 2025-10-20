@@ -12,6 +12,8 @@ import argparse
 from pathlib import Path
 import logging
 import time
+import yaml
+from datetime import datetime
 from utils.file_readers import read_parquet_to_table, read_csv_to_table, read_json_to_table, read_excel_to_table
 
 # Setup logging
@@ -168,6 +170,9 @@ class DuckDBBuilder:
             # Validate
             self._validate_database(con)
 
+            # Export schema to YAML
+            self._export_schema(con)
+
             # Calculate elapsed time
             elapsed_time = time.time() - start_time
 
@@ -221,7 +226,7 @@ class DuckDBBuilder:
 
         # Common naming patterns and their descriptions
         comment_patterns = {
-            'scada': "Time series data from SCADA system",
+            #'scada': "Time series data from SCADA system",
             'metadata': "Metadata and lookup information",
             'mapping': "Mapping or lookup table",
             'modes': "System operating modes",
@@ -245,14 +250,92 @@ class DuckDBBuilder:
     def _validate_database(self, con):
         """Basic validation checks."""
         logger.info("Validating database...")
-        
+
         # Check row counts
         tables = con.execute("SHOW TABLES").fetchall()
         for (table,) in tables:
             count = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             if count == 0:
                 logger.warning(f"  Table {table} is empty!")
-    
+
+    def _export_schema(self, con):
+        """Export database schema to YAML file."""
+        logger.info("Exporting schema to YAML...")
+
+        schema_data = {
+            'database': self.folder_name,
+            'created': datetime.now().isoformat(),
+            'db_file': str(self.db_path),
+            'tables': {}
+        }
+
+        # Get all tables
+        tables = [table[0] for table in con.execute("SHOW TABLES").fetchall()]
+
+        for table in tables:
+            try:
+                # Get row count
+                row_count = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+
+                # Get column information
+                columns_info = con.execute(f"DESCRIBE {table}").fetchall()
+                columns = []
+                for col in columns_info:
+                    col_dict = {
+                        'name': col[0],
+                        'type': col[1],
+                        'nullable': col[2] == 'YES'
+                    }
+                    columns.append(col_dict)
+
+                # Get indexes for this table
+                try:
+                    indexes_result = con.execute(f"""
+                        SELECT index_name
+                        FROM duckdb_indexes()
+                        WHERE table_name = '{table}'
+                    """).fetchall()
+                    indexes = [idx[0] for idx in indexes_result]
+                except Exception:
+                    indexes = []
+
+                # Get table comment if available
+                try:
+                    comment_result = con.execute(f"""
+                        SELECT comment
+                        FROM duckdb_tables()
+                        WHERE table_name = '{table}'
+                    """).fetchone()
+                    comment = comment_result[0] if comment_result and comment_result[0] else None
+                except Exception:
+                    comment = None
+
+                # Build table schema
+                table_schema = {
+                    'row_count': row_count,
+                    'columns': columns
+                }
+
+                if indexes:
+                    table_schema['indexes'] = indexes
+
+                if comment:
+                    table_schema['description'] = comment
+
+                schema_data['tables'][table] = table_schema
+
+            except Exception as e:
+                logger.warning(f"  Could not export schema for table {table}: {e}")
+
+        # Write to YAML file
+        schema_file = self.processed_path / f"{self.folder_name}_schema.yaml"
+        try:
+            with open(schema_file, 'w') as f:
+                yaml.dump(schema_data, f, default_flow_style=False, sort_keys=False, indent=2)
+            logger.info(f"  ✓ Schema exported to: {schema_file}")
+        except Exception as e:
+            logger.error(f"  ✗ Failed to write schema file: {e}")
+
     def _print_summary(self, con, elapsed_time=None):
         """Print database summary."""
         print("\n" + "="*60)

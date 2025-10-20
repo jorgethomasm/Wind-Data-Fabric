@@ -1,6 +1,7 @@
 project:
   name: wind-data-fabric
   version: 1.0.0
+  author: Jorge A. Thomas-Meléndez
 
 data:
   raw_path: data/raw

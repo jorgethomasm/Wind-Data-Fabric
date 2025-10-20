@@ -4,7 +4,6 @@ File readers utility for DuckDB.
 Author: jorgethomasm@ieee.org
 """
 
-
 from pathlib import Path
 from typing import Dict, Union
 import duckdb
