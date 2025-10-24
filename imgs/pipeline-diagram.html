@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wind Data Fabric Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 60px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 20px;
+            color: #666;
+            font-weight: 400;
+        }
+        
+        .pipeline {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .stage {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .card.input {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-color: #0284c7;
+        }
+        
+        .card.process {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            border-color: #ea580c;
+            padding: 32px 24px;
+        }
+        
+        .card.output {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #16a34a;
+        }
+        
+        .card.output.small {
+            padding: 16px;
+        }
+        
+        .card.output.small .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .card.output.small .card-title {
+            font-size: 15px;
+        }
+        
+        .card.output.small .card-subtitle {
+            font-size: 12px;
+        }
+        
+        .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+        
+        .card-subtitle {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .arrow {
+            font-size: 48px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+        
+        .process-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #444;
+            text-align: left;
+        }
+        
+        .process-details span {
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .process-details span:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ea580c;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            padding-top: 30px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .footer p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .footer .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .tech-badge {
+            background: #f3f4f6;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #374151;
+            font-weight: 600;
+            border: 2px solid #d1d5db;
+        }
+        
+        @media (max-width: 1200px) {
+            .pipeline {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌬️ Wind Data Fabric</h1>
+            <p>Automated Wind Farm SCADA Data Pipeline</p>
+        </div>
+        
+        <div class="pipeline">
+            <!-- Input Stage -->
+            <div class="stage">
+                <div class="card input">
+                    <span class="icon">📄</span>
+                    <div class="card-title">CSV Files</div>
+                    <div class="card-subtitle">.csv</div>
+                </div>
+                <div class="card input">
+                    <span class="icon">📦</span>
+                    <div class="card-title">Parquet Files</div>
+                    <div class="card-subtitle">.parquet</div>
+                </div>
+                <div class="card input">
+                    <span class="icon">📋</span>
+                    <div class="card-title">JSON Files</div>
+                    <div class="card-subtitle">.json</div>
+                </div>
+                <div class="card input">
+                    <span class="icon">📊</span>
+                    <div class="card-title">Excel Files</div>
+                    <div class="card-subtitle">.xlsx, .xls</div>
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <!-- Processing Stage -->
+            <div class="stage">
+                <div class="card process">
+                    <span class="icon">🐍</span>
+                    <div class="card-title">Python Processing</div>
+                    <div class="card-subtitle">create_duckdb.py</div>
+                    <div class="process-details">
+                        <span>Auto-discovery</span>
+                        <span>Table naming</span>
+                        <span>Auto-indexing</span>
+                        <span>Schema generation</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <!-- Output Stage -->
+            <div class="stage">
+                <div class="card output small">
+                    <span class="icon">📝</span>
+                    <div class="card-title">Schema YAML</div>
+                    <div class="card-subtitle">.yaml</div>
+                </div>
+                <div class="card output">
+                    <span class="icon">🦆</span>
+                    <div class="card-title">DuckDB Database</div>
+                    <div class="card-subtitle">.duckdb</div>
+                </div>
+                <div class="card output small">
+                    <span class="icon">📋</span>
+                    <div class="card-title">Process Logs</div>
+                    <div class="card-subtitle">.txt</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Multi-format wind farm data consolidation toolkit</strong></p>
+            <p>Automatically processes CSV, Parquet, JSON, and Excel files into optimised DuckDB databases</p>
+            <div class="tech-stack">
+                <span class="tech-badge">🐍 Python</span>
+                <span class="tech-badge">🦆 DuckDB</span>
+                <span class="tech-badge">⚡ High Performance</span>
+                <span class="tech-badge">🔄 Cross-platform</span>
+            </div>
+            <p style="margin-top: 24px; font-size: 15px; color: #666;">
+                <strong>Author:</strong> jorgethomasm@ieee.org
+            </p>
+        </div>
+    </div>
+</body>
+</html>
