@@ -41,7 +41,7 @@ class DuckDBBuilder:
 
         self.raw_path = self.base_path / "data" / "raw" / folder_name
         self.processed_path = self.base_path / "data" / "processed"
-        self.db_path = self.processed_path / f"{folder_name}.duckdb"
+        self.db_path = self.processed_path / f"{folder_name}_raw.duckdb"
 
         # Track total raw file sizes
         self.total_raw_size = 0
@@ -339,7 +339,7 @@ class DuckDBBuilder:
                 logger.warning(f"  Could not export schema for table {table}: {e}")
 
         # Write to YAML file
-        schema_file = self.processed_path / f"{self.folder_name}_schema.yaml"
+        schema_file = self.processed_path / f"{self.folder_name}_raw_schema.yaml"
         try:
             with open(schema_file, 'w') as f:
                 yaml.dump(schema_data, f, default_flow_style=False, sort_keys=False, indent=2)
@@ -383,7 +383,7 @@ class DuckDBBuilder:
         print("\n" + "\n".join(summary_lines))
 
         # Save to log file
-        log_file = self.processed_path / f"{self.folder_name}_log.txt"
+        log_file = self.processed_path / f"{self.folder_name}_raw_log.txt"
         try:
             with open(log_file, 'w') as f:
                 f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
